@@ -1,0 +1,65 @@
+.form_search{
+   display: flex;
+   justify-content: space-between;
+   align-items: center;
+   padding: 0 14px;
+
+   .closeSearch{
+        padding: 0 1rem;
+        font-weight: 500;
+        cursor: pointer;
+        &:hover{
+            color:blue;
+        }
+   }
+   
+   .active{
+    border: 1px solid blue !important;
+    background-color: white !important;
+   }
+    .group_input{
+        display: flex;
+        align-items: center;
+       padding: 8px 10px;
+       border-radius: 16px;
+       background-color: var(--grey-500);
+       flex-grow: 1;
+       border: 1px solid white;
+       .iconDelete{
+        cursor: pointer;
+        opacity: 0;
+        &:hover{
+            color:blue;
+        }
+       }
+       .ative_delete{
+            opacity: 1;
+       }
+        span{
+            margin-right: 5px;
+        }
+        input{
+            background-color: transparent;
+            font-size: 14px;
+          
+        }
+    }
+    
+        .icon{
+            font-size: 1.25rem;
+            cursor: pointer;
+            width: 35px;
+            height: 35px;
+          
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 50%;
+
+            &:hover{
+                background-color: var(--grey-500);
+            }
+            
+        }
+    
+}

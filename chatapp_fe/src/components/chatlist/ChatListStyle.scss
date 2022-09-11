@@ -1,0 +1,17 @@
+.chatlist{
+    height: 100vh;
+    width: 440px;
+    border-right: 1px solid var(--grey-500);
+    padding: 14px 0;
+    .listChatCard{
+      height: 84vh;
+        //overflow-y: scroll;
+    }
+
+}
+
+.css-1h9z7r5-MuiButtonBase-root-MuiTab-root{
+    font-size: 12px !important;
+    font-weight: 600 !important;
+  
+}
