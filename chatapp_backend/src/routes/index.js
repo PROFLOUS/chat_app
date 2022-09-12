@@ -1,4 +1,4 @@
-const userRouter = require('./user');
+
 
 const route =(app,io) => {
     const meRouter = require('./me');
@@ -8,7 +8,6 @@ const route =(app,io) => {
 
     // app.use('/me', meRouter);
     app.use('/friends', friendRouter);
-    app.use('/users', userRouter);
     app.use('/conversation',conversationRouter)
     app.use('/messages',messageRouter)
     

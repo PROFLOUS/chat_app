@@ -14,19 +14,15 @@ const conversationSchema = new Schema({
     leaderId: {
         type: ObjectId,
     },
-    managerIds: {
-        type: [ObjectId],
-        default: [],
-    },
     lastMessageId:ObjectId,
-    pinMessageIds:{
-        type: [ObjectId],
-        default: [],
-    },
     members: {
         type: [{
             userId: {
                 type: ObjectId,
+                required: true
+              },
+              userFistName: {
+                type: String,
                 required: true
               },
               userLastName: {

@@ -15,10 +15,6 @@ const messageSchema = new Schema({
         type: ObjectId,
         required: true
     },
-    deletedByUserIds: {
-        type: [ObjectId],
-        default: [],
-    },
     isDeleted: {
         type: Boolean,
         default: false,

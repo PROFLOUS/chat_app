@@ -1,4 +1,4 @@
-const User = require('../models/User');
+
 const Friend = require('../models/Friend');
 const FriendReq = require('../models/FriendRequest');
 const ConversationService = require('./ConversationService');
@@ -10,7 +10,7 @@ const FriendService = {
 
     },
 
-    acceptFriend:async(_id, senderId)=> {
+    acceptFriend:async(user, sender)=> {
 
         //check co ton tai loi moi
         // await FriendReq.checkByIds(senderId, _id);
@@ -19,17 +19,19 @@ const FriendService = {
         // if (await Friend.existsByIds(_id, senderId))
         //     throw new MyError('Friend exists');
 
-        // delete invite
+        // delete xoa loi moi
         // await FriendRequest.deleteOne({ senderId, receiverId: _id });
 
         // add friend
-        const friend = new Friend({ userIds: [_id, senderId] });
+        const friend = new Friend({ 
+            user:[user,sender]
+        });
         await friend.save();
 
         const conversationService = new ConversationService();
         return await conversationService.createIndividualConversationWhenWasFriend(
-            _id,
-            senderId
+            user,
+            sender
         );
     }
 

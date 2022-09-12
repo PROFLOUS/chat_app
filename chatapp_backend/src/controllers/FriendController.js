@@ -17,10 +17,25 @@ class FriendController {
 
     // [POST] /:userId
     async acceptFriend (req, res, next){
-        const {_id}=req.body;
-        const {userId}=req.params;
+        // const {_id,frenAva,frenLastName,frenFirstNam}=req.body;
+        // id friend
+
+        const user ={
+            userId:req.body.userId,
+            userFistName:req.body.userFistName,
+            userLastName:req.body.userLastName,
+            avaUser:req.body.avaUser
+        }
+
+        const sender ={
+            userId:req.params.userId,
+            userFistName:req.body.userFistName2,
+            userLastName:req.body.userLastName2,
+            avaUser:req.body.avaUser2
+        }
+
         try {
-            const result = await friendService.acceptFriend(_id, userId);
+            const result = await friendService.acceptFriend(user, sender);
             res.status(201).json(result);
 
         }catch (e) {

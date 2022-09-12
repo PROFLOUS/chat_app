@@ -1,8 +1,10 @@
 const Message = require('../models/Message');
 const Conversation = require('../models/Conversation');
 const MyError = require('../exception/MyError');
-const User = require('../models/User');
+
 const commonUtils = require('../utils/commonUtils');
+const Member = require('../models/Member');
+const awsS3Service = require('../services/AwsS3Service');
 const MessageService ={
 
     //get list messages of conversationId
@@ -70,52 +72,80 @@ const MessageService ={
         
     },
 
-    // async getById(_id, type) {
-    //     if (type) {
-    //         const message = await Message.getByIdOfGroup(_id);
-
-    //         return messageUtils.convertMessageOfGroup(message);
-    //     }
-
-    //     const message = await Message.getByIdOfIndividual(_id);
-    //     return messageUtils.convertMessageOfIndividual(message);
-    // },
-
-
-
     // send text
     addText:async(message, userId) => {
 
-        const { conversationId } = message;
-
+        
+        const { conversationId,content } = message;
+        console.log(message);
         const newMessage = new Message({
             userId,
-            ...message,
+            content,
+            conversationId,
+            ...message
         });
+
+        console.log(newMessage);
 
         // lưu xuống
         const saveMessage = await newMessage.save();
+        console.log("saveMessage");
+        // cap nhat conversation khi co tin nhan moi
+        return MessageService.updateWhenHasNewMessage(
+            saveMessage,
+            conversationId,
+            userId
+        );
 
-        return saveMessage;
     },
 
-    // async updateWhenHasNewMessage(saveMessage, conversationId, userId) {
-    //     const { _id } = saveMessage;
 
-    //         await Conversation.updateOne(
-    //             { _id: conversationId },
-    //             { lastMessageId: _id }
-    //         );
+    // send file
+    addFile:async(file,type,conversationId, userId) => {
 
-    //         await lastViewService.updateLastViewOfConversation(
-    //             conversationId,
-    //             userId
-    //         );
+        // upload ảnh
+        const content = await awsS3Service.uploadFile(file);
 
-    //     const { type } = await Conversation.findById(conversationId);
+        console.log("content"+content);
 
-    //     return await this.getById(_id, type);
-    // }
+        const newMessageTmp = {
+            userId,
+            content,
+            type,
+            conversationId,
+        }
+
+        const newMessage = new Message({
+            ...newMessageTmp,
+        });
+
+        // lưu 
+        const saveMessage = await newMessage.save();
+
+        return MessageService.updateWhenHasNewMessage(
+            saveMessage,
+            conversationId,
+            userId
+        );
+
+    },
+
+    // update conversation when has new message
+    updateWhenHasNewMessage: async(saveMessage, conversationId, userId) => {
+        const { _id } = saveMessage;
+        console.log(_id);
+        await Conversation.updateOne(
+            { _id: conversationId },
+            { lastMessageId: _id }
+        );
+
+        await Member.updateOne(
+            { conversationId, userId },
+            { $set: { lastView: new Date() } }
+        );
+
+        return await Message.findById(_id);
+    }
 
 }
 

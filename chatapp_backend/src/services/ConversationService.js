@@ -1,5 +1,4 @@
 const Conversation = require('../models/Conversation');
-const conversationValidate = require('../validate/conversationValidate');
 const Member = require('../models/Member');
 const messageService = require('../services/MessageService');
 const Message = require('../models/Message');
@@ -52,8 +51,6 @@ class ConversationService {
     
     // return id conversation
     async createIndividualConversation(user1, user2) {
-        // const {userId,userLastName,avaUser} =user1;
-        // const {userId,userLastName,avaUser} =user2;
 
         // const { userName1, userName2, conversationId } =
         //     await conversationValidate.validateIndividualConversation(
@@ -92,14 +89,22 @@ class ConversationService {
     }
 
     //create conversation when was friend
-    async createIndividualConversationWhenWasFriend(userId1, userId2) {
-        console.log(userId1, userId2)
+    async createIndividualConversationWhenWasFriend(user, sender) {
         const { _id, isExists } = await this.createIndividualConversation(
-            userId1,
-            userId2
+            user,
+            sender
         );
 
-        return { conversationId: _id, isExists };
+        // tao loi chao mung
+        const newMessage = new Message({
+            content: 'Đã là bạn bè',
+            type: 'NOTIFY',
+            conversationId: _id,
+        });
+
+        const saveMessage = await messageService.addText(newMessage, user.userId);
+
+        return { conversationId: _id, isExists , message: saveMessage};
     }
 
 

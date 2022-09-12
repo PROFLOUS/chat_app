@@ -1,7 +1,6 @@
 const ConversationService = require('../services/ConversationService');
 const Conversation = require('../models/Conversation');
 const Message = require('../models/Message');
-const uid = require('../middleware/getUid');
 
 class ConversationController {
     constructor(io) {

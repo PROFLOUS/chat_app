@@ -7,7 +7,6 @@ const routes = require('./src/routes');
 const handleErr = require('./src/middleware/handleEror');
 const morgan = require('morgan');
 const bodyParser = require('body-parser');
-const getId = require('./src/middleware/getUid')
 require('dotenv').config()
 const connectDB = require('./src/config/connectDB')
 
@@ -30,15 +29,6 @@ socket(io);
 app.use(handleErr);
 
 routes(app,io);
-// var a = getId(app);
-// console.log(a);
-
-// if (typeof localStorage === "undefined" || localStorage === null) {
-//     var LocalStorage = require('node-localstorage').LocalStorage;
-//     localStorage = new LocalStorage('./scratch');
-//     }
-// var id = localStorage.getItem('user')
-// console.log(id)
 
 
 
