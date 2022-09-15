@@ -76,6 +76,85 @@ conversationSchema.statics.getByIdAndUserId = async (
 };
 
 
+//total conversation by userId 
+conversationSchema.statics.countConversationByUserId = async (
+    userId,
+) => {
+    const totalCon = await Conversation.countDocuments({
+        "members.userId":{$all:[ObjectId(userId)]}
+    });
+
+    return totalCon;
+};
+
+conversationSchema.statics.getAllConversation = async (
+    userId,
+    skip,
+    limit
+) => {
+    const getAll = await Conversation.aggregate([
+        {
+            $match: {
+                    "members.userId":{$all:[ObjectId(userId)]}
+            },
+        },
+        {
+            $lookup: {
+                from: 'messages',
+                localField: 'lastMessageId',
+                foreignField: '_id',
+                as: 'lastMessage',
+            },
+        },
+        {
+            $lookup: {
+                from: 'members',
+                localField: '_id',
+                foreignField: 'conversationId',
+                as: 'mb',
+            },
+        },
+        {
+            $unwind:"$mb"
+        },
+        {
+             $match: {
+                  "mb.userId":ObjectId(userId)
+              },
+        },
+        {
+            $project: {
+                _id: 1,
+                name: 1,
+                avatar: 1,
+                countUnread: 1,
+                lastMessage: {
+                    content: 1,
+                    type: 1,
+                    updatedAt: 1,
+                },
+                mb:{
+                    numberUnread: 1,
+                  }
+            },
+        },
+        {
+          $sort: {
+            "lastMessage.updatedAt": -1,
+          },
+        },
+        {
+            $skip: skip,
+        },
+        {
+            $limit: limit,
+        },
+        
+    ]);
+    return getAll;
+};
+
+
 const Conversation = mongoose.model('Conversation', conversationSchema);
 
 module.exports = Conversation;

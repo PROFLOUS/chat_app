@@ -2,44 +2,136 @@ const Conversation = require('../models/Conversation');
 const Member = require('../models/Member');
 const messageService = require('../services/MessageService');
 const Message = require('../models/Message');
+const commonUtils = require('../utils/commonUtils');
+const ArgumentError = require('../exception/ArgumentError');
 
 
 class ConversationService {
 
 
-    async getConversationById(_id){
+    async getConversationById(conversationId,userId,page, size){
+        if (!conversationId || !size || page < 0 || size <= 0)
+            throw new ArgumentError();
+
+        
+
+        const totalMessages =
+        await Message.countDocumentsByConversationIdAndUserId(
+            conversationId
+        );
+
+        const { skip, limit, totalPages } = commonUtils.getPagination(
+            page,
+            size,
+            totalMessages
+        );
+
+
         try {
-            let messages = await Message.find({conversationId: _id});
-            return messages;
+            let messages = await Message.getListByConversationIdAndUserIdOfIndividual(conversationId,skip,limit);
+            
+
+            await Member.updateOne(
+                { conversationId, userId },
+                { $set: { lastView: new Date() } },
+
+            );
+            const member = await Member.findOne({conversationId, userId});
+            const { lastView, isNotify } = member;
+            const countUnread = await Message.countUnread(lastView, conversationId);
+            console.log(countUnread);
+            await member.updateOne({ $set: { numberUnread: countUnread } });
+
+            return {
+                data: messages,
+                page,
+                size,
+                totalPages
+            }
         } catch (error) {
             console.log(error);
         }
     }
 
-    async getAllConversation(userId){
+    async getAllConversation(userId,page, size){
+        if (!userId || !size || page < 0 || size <= 0)
+            throw new ArgumentError();
+
+        // const member = await Member.findOne({conversationId, userId});
+        // const { lastView, isNotify } = member;
+        // const countUnread = await Message.countUnread(lastView, conversationId);
+
+        // await member.updateOne({ $set: { numberUnread: countUnread } });
+
+        const totalCon =
+        await Conversation.countConversationByUserId(
+            userId
+        );
+
+        const { skip, limit, totalPages } = commonUtils.getPagination(
+            page,
+            size,
+            totalCon
+        );
+
+        const consId = await Conversation.find({
+            "members.userId":{$in:[userId]},
+        })
+
+        consId.map(async(con) => {
+            const {_id} =con;
+            const member = await Member.find({
+                conversationId:{$in:[_id]}
+                , userId
+            });
+            console.log("1"+member);
+
+            const { lastView } = member[0];
+            const countUnread = await Message.countUnread(lastView, _id);
+            console.log(countUnread);
+            const mb = await Member.find({
+                conversationId:{$in:[_id]}
+                , userId
+            });
+            await mb[0].updateOne({ $set: { numberUnread: countUnread } });
+            const mb2 = await Member.find({
+                conversationId:{$in:[_id]}
+                , userId
+            });
+
+            console.log("2"+mb2);
+
+
+
+            // const rs = await Member.updateMany(
+            //     { conversationId:{$in:[_id]}, userId },
+            //     { $set: { numberUnread: countUnread } }
+            // )
+
+
+
+            // await member[0].updateOne(
+            //     { $set: { numberUnread: countUnread } });
+            // console.log(member[0]);
+            
+        });
+
+
         try {
-            const listChats = await (await Conversation.find({"members.userId":{$all:[userId]}},{_id:1}));
-            let id =[];
-            listChats.forEach(async (item)=>{
-                id.push(item._id);
-            })
-            let listMessages = await Message.getListByConversationIdAndUserIdOfIndividual(id,0,20);
-            const map = new Map();
-            for(let message of listMessages){
-                let key = message.conversationId.toString();
-                if(map.has(key)){
-                    if(map.get(key).updatedAt < message.updatedAt){
-                        map.set(key, message);
-                    } 
-                } else {
-                    map.set(key, message);
-                }
+            let conversations = await Conversation.getAllConversation(
+                userId,
+                skip,
+                limit
+            );
+
+
+            return {
+                data: conversations,
+                page,
+                size,
+                totalPages
             }
-            const rs =[];
-                for(let[key, value] of map){
-                    rs.push(value);
-            }
-            return rs;
+
         }catch (err) {
             console.log(err);
         }

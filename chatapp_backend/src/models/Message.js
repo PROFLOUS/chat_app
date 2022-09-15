@@ -34,10 +34,6 @@ const messageSchema = new Schema({
     replyMessageId: {
         type: ObjectId,
     },
-    tagUserIds: {
-        type: [ObjectId],
-        default: [],
-    },
     type: {
         type: String,
         enum: [
@@ -63,29 +59,23 @@ const messageSchema = new Schema({
 //total message 
 messageSchema.statics.countDocumentsByConversationIdAndUserId = async (
     conversationId,
-    userId
 ) => {
     const totalMessages = await Message.countDocuments({
         conversationId,
-        deletedByUserIds: {
-            $nin: [userId],
-        },
     });
 
     return totalMessages;
 };
 //list conversation individual
 messageSchema.statics.getListByConversationIdAndUserIdOfIndividual = async (
-    pr,
+    conversationId,
     skip,
     limit
 ) => {
     const messages = await Message.aggregate([
         {
             $match: {
-                conversationId: { 
-                    $in:pr
-                },
+                conversationId: ObjectId(conversationId),
             },
         },
         {
@@ -104,6 +94,8 @@ messageSchema.statics.getListByConversationIdAndUserIdOfIndividual = async (
                     _id: 1,
                     name: 1,
                     avatar: 1,
+                    members: 1,
+                    numberUnread: 1,
                 },
                 content: 1,
                 type: 1,
@@ -120,6 +112,13 @@ messageSchema.statics.getListByConversationIdAndUserIdOfIndividual = async (
         
     ]);
     return messages;
+};
+
+messageSchema.statics.countUnread = async (time, conversationId) => {
+    return await Message.countDocuments({
+        createdAt: { $gt: time },
+        conversationId,
+    });
 };
 
 const Message = mongoose.model('Message', messageSchema);

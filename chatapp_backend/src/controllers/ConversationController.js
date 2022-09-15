@@ -11,13 +11,14 @@ class ConversationController {
 
     // [GET] /:id
     async getOne(req, res, next) {
-        const { _id } = req;
         const { id } = req.params;
+        const {page=0, size=20} = req.query;
+        const {userId} = req.body;
 
         try {
             const conversationService = new ConversationService();
             const conversation =
-                await conversationService.getConversationById(id);
+                await conversationService.getConversationById(id,userId,parseInt(page),parseInt(size));
             res.json(conversation);
         } catch (err) {
             next(err);
@@ -26,12 +27,13 @@ class ConversationController {
 
     // [GET] /
     async getAll(req, res, next) {
-        let userId = req.headers._id;
+        let {userId} = req.body;
+        const {page=0, size=20} = req.query;
 
         try {
             const conversationService = new ConversationService();
             const conversations =
-                await conversationService.getAllConversation(userId);
+                await conversationService.getAllConversation(userId,parseInt(page),parseInt(size));
             res.json(conversations);
         }catch (err) {
             next(err);

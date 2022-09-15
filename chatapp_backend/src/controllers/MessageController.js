@@ -31,12 +31,11 @@ class MessageController {
 
     //[POST] /text  tin nhắn dạng text
     async addText(req, res, next) {
-        const { _id } = req;
-        console.log(_id);
+        const { userId } = req.body;
 
         try {
             // const { conversationId } = req.body;
-            const message = await messageService.addText(req.body, _id);
+            const message = await messageService.addText(req.body, userId);
             res.status(201).json(message);
         } catch (err) {
             next(err);

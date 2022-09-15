@@ -12,6 +12,9 @@ const memberSchema = new Schema({
     type: Date,
     default: Date.now()
   },
+  numberUnread: {
+    type: Number
+  },
   userId: {
     type: ObjectId,
   },
